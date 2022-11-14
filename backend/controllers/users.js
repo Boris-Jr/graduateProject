@@ -15,30 +15,29 @@ if (
     !req.body.password ||
     !req.body.numberPhone
 )
-    return res.status(400).send({ message: "Incomplete data" });
+    return res.status(400).send({ message: "Datos incompletos" });
   //Validamos que el nombre no contenga números
 if (!regExpLetters.test(req.body.name)) {
     return res
     .status(400)
-    .send({ message: "The username must not contain numbers" });
+    .send({ message: "El nombre del usuario no debe contener números" });
 }
   //Validamos que el email esté bien escrito
 if (!regExpEmail.test(req.body.email)) {
     return res
     .status(400)
-    .send({ message: "It seems your email has typos. Give it another try!" });
+    .send({ message: "Correo electronico mal digitado" });
 }
   //Validamos que no exista actualemnte un usuario registrado con ese email
 const existingUser = await user.findOne({ email: req.body.email });
-if (existingUser)
-    return res.status(400).send({ message: "The user is already registered" });
+if (existingUser) return res.status(400).send({ message: "El usuario ya se encuentra registrado" });
 
   //Se encripta la contraseña
 const passHash = await bcrypt.hash(req.body.password, 10);
 
   //Validamos que el rol de usuario exista en la base de datos
 const roleId = await role.findOne({ name: "user" });
-if (!roleId) return res.status(400).send({ message: "No role was assigned" });
+if (!roleId) return res.status(400).send({ message: "El rol no existe" });
 
 const userRegister = new user({
     name: req.body.name,
@@ -67,22 +66,20 @@ try {
     userName: result.name,
     });
 } catch (e) {
-    return res.status(400).send({ message: "Register error" });
+    return res.status(400).send({ message: "Ocurrió un error durante el registro. Intente nuevamente" });
 }
 };
 
 const login = async (req, res) => {
 
     if (!req.body.email || !req.body.password)
-    return res.status(400).send({ message: "Incomplete data" });
+    return res.status(400).send({ message: "Datos incompletos" });
 
 const userLogin = await user.findOne({ email: req.body.email });
-if (!userLogin)
-    return res.status(400).send({ message: "Wrong email or password" });
+if (!userLogin) return res.status(400).send({ message: "Usuario o contraseña incorrectos" });
 
 const hash = await bcrypt.compare(req.body.password, userLogin.password);
-if (!hash)
-    return res.status(400).send({ message: "Wrong email or password" });
+if (!hash) return res.status(400).send({ message: "Usuario o contraseña incorrectos" });
 
 try {
     return res.status(200).json({
@@ -98,7 +95,7 @@ try {
     userName: userLogin.name,
     });
 } catch (e) {
-    return res.status(400).send({ message: "Login error" });
+    return res.status(400).send({ message: "Ocurrió un error al iniciar sesión. Intente nuevamente" });
 }
 };
 
